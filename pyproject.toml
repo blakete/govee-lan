@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "govee-lan"
+version = "0.1.0"
+description = "Discover and control Govee lights over the local network via the Govee LAN API"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+keywords = ["govee", "lan", "iot", "smart-home", "lights"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Home Automation",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+govee = "govee_lan.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["govee_lan*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
