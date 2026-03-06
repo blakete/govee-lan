@@ -1,5 +1,10 @@
 # govee-lan
 
+[![CI](https://github.com/blakete/Govee-Lamp-Control/actions/workflows/ci.yml/badge.svg)](https://github.com/blakete/Govee-Lamp-Control/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
+[![License](https://img.shields.io/github/license/blakete/Govee-Lamp-Control)](LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 A simple Python library and CLI for discovering and controlling Govee lights over the local network using the [Govee LAN API](https://app-h5.govee.com/user-manual/wlan-guide).
 
 No cloud account or API keys required -- all communication happens via UDP on your LAN.
@@ -51,22 +56,30 @@ import govee_lan
 
 # Discover devices
 devices = govee_lan.scan()
-for device in devices:
-    print(f"{device.sku} at {device.ip}")
+device = devices[0]
+print(f"{device.sku} at {device.ip}")
 
 # Control a device
-govee_lan.turn_on("192.168.1.100")
-govee_lan.set_brightness("192.168.1.100", 80)
-govee_lan.set_color("192.168.1.100", 255, 0, 128)
-govee_lan.set_color_temp("192.168.1.100", 4000)
+device.turn_on()
+device.set_brightness(80)
+device.set_color(255, 0, 128)
+device.set_color_temp(4000)
 
 # Query status
-status = govee_lan.get_status("192.168.1.100")
+status = device.get_status()
 if status:
     print(f"On: {status.on}, Brightness: {status.brightness}%")
     print(f"Color: R={status.color_r} G={status.color_g} B={status.color_b}")
     print(f"Color Temp: {status.color_temp_kelvin}K")
 
+device.turn_off()
+```
+
+IP-based functions are also available for direct control without scanning:
+
+```python
+govee_lan.turn_on("192.168.1.100")
+govee_lan.set_brightness("192.168.1.100", 80)
 govee_lan.turn_off("192.168.1.100")
 ```
 
