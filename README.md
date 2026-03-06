@@ -1,8 +1,8 @@
 # govee-lan
 
-[![CI](https://github.com/blakete/Govee-Lamp-Control/actions/workflows/ci.yml/badge.svg)](https://github.com/blakete/Govee-Lamp-Control/actions/workflows/ci.yml)
+[![CI](https://github.com/blakete/govee-lan/actions/workflows/ci.yml/badge.svg)](https://github.com/blakete/govee-lan/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
-[![License](https://img.shields.io/github/license/blakete/Govee-Lamp-Control)](LICENSE)
+[![License](https://img.shields.io/github/license/blakete/govee-lan)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 A simple Python library and CLI for discovering and controlling Govee lights over the local network using the [Govee LAN API](https://app-h5.govee.com/user-manual/wlan-guide).
