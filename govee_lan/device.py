@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from govee_lan.protocol import DEFAULT_CMD_TIMEOUT
+
 
 @dataclass(frozen=True)
 class GoveeDevice:
@@ -28,6 +30,36 @@ class GoveeDevice:
             wifi_version_hard=data.get("wifiVersionHard", ""),
             wifi_version_soft=data.get("wifiVersionSoft", ""),
         )
+
+    def turn_on(self) -> None:
+        from govee_lan import controller
+
+        controller.turn_on(self.ip)
+
+    def turn_off(self) -> None:
+        from govee_lan import controller
+
+        controller.turn_off(self.ip)
+
+    def set_brightness(self, value: int) -> None:
+        from govee_lan import controller
+
+        controller.set_brightness(self.ip, value)
+
+    def set_color(self, r: int, g: int, b: int) -> None:
+        from govee_lan import controller
+
+        controller.set_color(self.ip, r, g, b)
+
+    def set_color_temp(self, kelvin: int) -> None:
+        from govee_lan import controller
+
+        controller.set_color_temp(self.ip, kelvin)
+
+    def get_status(self, timeout: float = DEFAULT_CMD_TIMEOUT) -> DeviceStatus | None:
+        from govee_lan import controller
+
+        return controller.get_status(self.ip, timeout=timeout)
 
 
 @dataclass(frozen=True)

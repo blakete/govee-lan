@@ -1,8 +1,11 @@
 """Tests for device data classes."""
 
+import json
+
 import pytest
 
 from govee_lan.device import DeviceStatus, GoveeDevice
+from tests.conftest import SAMPLE_STATUS_RESPONSE
 
 
 class TestGoveeDevice:
@@ -67,3 +70,60 @@ class TestDeviceStatus:
         assert status.color_r == 0
         assert status.color_g == 0
         assert status.color_b == 0
+
+
+class TestGoveeDeviceMethods:
+    """Test the OOP control methods on GoveeDevice that delegate to controller."""
+
+    @pytest.fixture
+    def device(self):
+        return GoveeDevice(ip="192.168.1.100", device_id="AA:BB:CC", sku="H6076")
+
+    def test_turn_on(self, device, mock_sockets):
+        device.turn_on()
+        payload = mock_sockets.sender.sendto.call_args.args[0]
+        msg = json.loads(payload)
+        assert msg["msg"]["cmd"] == "turn"
+        assert msg["msg"]["data"]["value"] == 1
+        assert mock_sockets.sender.sendto.call_args.args[1] == ("192.168.1.100", 4003)
+
+    def test_turn_off(self, device, mock_sockets):
+        device.turn_off()
+        payload = mock_sockets.sender.sendto.call_args.args[0]
+        msg = json.loads(payload)
+        assert msg["msg"]["cmd"] == "turn"
+        assert msg["msg"]["data"]["value"] == 0
+
+    def test_set_brightness(self, device, mock_sockets):
+        device.set_brightness(42)
+        payload = mock_sockets.sender.sendto.call_args.args[0]
+        msg = json.loads(payload)
+        assert msg["msg"]["cmd"] == "brightness"
+        assert msg["msg"]["data"]["value"] == 42
+
+    def test_set_color(self, device, mock_sockets):
+        device.set_color(100, 200, 50)
+        payload = mock_sockets.sender.sendto.call_args.args[0]
+        msg = json.loads(payload)
+        assert msg["msg"]["data"]["color"] == {"r": 100, "g": 200, "b": 50}
+        assert msg["msg"]["data"]["colorTemInKelvin"] == 0
+
+    def test_set_color_temp(self, device, mock_sockets):
+        device.set_color_temp(5000)
+        payload = mock_sockets.sender.sendto.call_args.args[0]
+        msg = json.loads(payload)
+        assert msg["msg"]["data"]["colorTemInKelvin"] == 5000
+        assert msg["msg"]["data"]["color"] == {"r": 0, "g": 0, "b": 0}
+
+    def test_get_status(self, device, mock_sockets):
+        mock_sockets.mock_recv.return_value = [(SAMPLE_STATUS_RESPONSE, "192.168.1.100")]
+        status = device.get_status()
+        assert status is not None
+        assert status.on is True
+        assert status.brightness == 75
+        assert status.color_r == 255
+
+    def test_get_status_timeout(self, device, mock_sockets):
+        mock_sockets.mock_recv.return_value = []
+        status = device.get_status(timeout=0.1)
+        assert status is None

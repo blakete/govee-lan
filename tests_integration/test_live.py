@@ -16,7 +16,8 @@ from pathlib import Path
 
 import pytest
 
-from govee_lan import get_status, scan, set_brightness, set_color, set_color_temp, turn_off, turn_on
+from govee_lan import scan
+from govee_lan.device import GoveeDevice
 
 CONFIG_PATH = Path(__file__).parent / "local_config.json"
 
@@ -34,8 +35,8 @@ def device_ips() -> list[str]:
 
 
 @pytest.fixture
-def first_ip(device_ips: list[str]) -> str:
-    return device_ips[0]
+def device(device_ips: list[str]) -> GoveeDevice:
+    return GoveeDevice(ip=device_ips[0], device_id="", sku="")
 
 
 class TestLiveScan:
@@ -47,45 +48,45 @@ class TestLiveScan:
 
 
 class TestLiveControl:
-    def test_turn_on_and_status(self, first_ip):
-        turn_on(first_ip)
+    def test_turn_on_and_status(self, device):
+        device.turn_on()
         time.sleep(0.5)
-        status = get_status(first_ip, timeout=5.0)
+        status = device.get_status(timeout=5.0)
         assert status is not None
         assert status.on is True
 
-    def test_set_brightness(self, first_ip):
-        turn_on(first_ip)
+    def test_set_brightness(self, device):
+        device.turn_on()
         time.sleep(0.3)
-        set_brightness(first_ip, 50)
+        device.set_brightness(50)
         time.sleep(0.5)
-        status = get_status(first_ip, timeout=5.0)
+        status = device.get_status(timeout=5.0)
         assert status is not None
         assert status.brightness == 50
 
-    def test_set_color(self, first_ip):
-        set_color(first_ip, 0, 255, 0)
+    def test_set_color(self, device):
+        device.set_color(0, 255, 0)
         time.sleep(0.5)
-        status = get_status(first_ip, timeout=5.0)
+        status = device.get_status(timeout=5.0)
         assert status is not None
         assert status.color_g == 255
 
-    def test_set_color_temp(self, first_ip):
-        set_color_temp(first_ip, 4000)
+    def test_set_color_temp(self, device):
+        device.set_color_temp(4000)
         time.sleep(0.5)
-        status = get_status(first_ip, timeout=5.0)
+        status = device.get_status(timeout=5.0)
         assert status is not None
         assert status.color_temp_kelvin == 4000
 
-    def test_turn_off(self, first_ip):
-        turn_off(first_ip)
+    def test_turn_off(self, device):
+        device.turn_off()
         time.sleep(0.5)
-        status = get_status(first_ip, timeout=5.0)
+        status = device.get_status(timeout=5.0)
         assert status is not None
         assert status.on is False
 
-    def test_restore_on(self, first_ip):
+    def test_restore_on(self, device):
         """Leave the lamp on after tests."""
-        turn_on(first_ip)
-        set_color_temp(first_ip, 6500)
-        set_brightness(first_ip, 100)
+        device.turn_on()
+        device.set_color_temp(6500)
+        device.set_brightness(100)
