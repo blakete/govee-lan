@@ -1,5 +1,7 @@
 """Tests for device data classes."""
 
+import pytest
+
 from govee_lan.device import DeviceStatus, GoveeDevice
 
 
@@ -29,11 +31,8 @@ class TestGoveeDevice:
 
     def test_frozen(self):
         dev = GoveeDevice(ip="1.2.3.4", device_id="x", sku="H1234")
-        try:
+        with pytest.raises(AttributeError):
             dev.ip = "5.6.7.8"  # type: ignore[misc]
-            assert False, "Should not allow mutation"
-        except AttributeError:
-            pass
 
 
 class TestDeviceStatus:

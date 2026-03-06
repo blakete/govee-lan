@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 
 SAMPLE_SCAN_RESPONSE = {
     "msg": {
@@ -97,10 +95,10 @@ def mock_sockets():
     ns.listener = listener
     ns.sender = sender
     ns.set_responses = _set_responses
-    ns.mock_recv = recv_mocks[1]         # controller recv
-    ns.scanner_recv = recv_mocks[0]      # scanner recv
-    ns.mock_make_listener = started[4]   # controller make_listener
-    ns.mock_make_sender = started[5]     # controller make_sender
+    ns.mock_recv = recv_mocks[1]  # controller recv
+    ns.scanner_recv = recv_mocks[0]  # scanner recv
+    ns.mock_make_listener = started[4]  # controller make_listener
+    ns.mock_make_sender = started[5]  # controller make_sender
 
     yield ns
 

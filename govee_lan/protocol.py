@@ -29,18 +29,22 @@ def build_brightness(value: int) -> bytes:
 
 def build_color(r: int, g: int, b: int) -> bytes:
     r, g, b = (max(0, min(255, c)) for c in (r, g, b))
-    return _encode({
-        "cmd": "colorwc",
-        "data": {"color": {"r": r, "g": g, "b": b}, "colorTemInKelvin": 0},
-    })
+    return _encode(
+        {
+            "cmd": "colorwc",
+            "data": {"color": {"r": r, "g": g, "b": b}, "colorTemInKelvin": 0},
+        }
+    )
 
 
 def build_color_temp(kelvin: int) -> bytes:
     kelvin = max(2000, min(9000, kelvin))
-    return _encode({
-        "cmd": "colorwc",
-        "data": {"color": {"r": 0, "g": 0, "b": 0}, "colorTemInKelvin": kelvin},
-    })
+    return _encode(
+        {
+            "cmd": "colorwc",
+            "data": {"color": {"r": 0, "g": 0, "b": 0}, "colorTemInKelvin": kelvin},
+        }
+    )
 
 
 def build_status_request() -> bytes:

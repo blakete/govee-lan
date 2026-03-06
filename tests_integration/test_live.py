@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from govee_lan import scan, turn_on, turn_off, set_brightness, set_color, set_color_temp, get_status
+from govee_lan import get_status, scan, set_brightness, set_color, set_color_temp, turn_off, turn_on
 
 CONFIG_PATH = Path(__file__).parent / "local_config.json"
 

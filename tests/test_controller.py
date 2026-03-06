@@ -2,8 +2,6 @@
 
 import json
 
-from tests.conftest import SAMPLE_STATUS_RESPONSE
-
 from govee_lan.controller import (
     get_status,
     set_brightness,
@@ -12,6 +10,7 @@ from govee_lan.controller import (
     turn_off,
     turn_on,
 )
+from tests.conftest import SAMPLE_STATUS_RESPONSE
 
 
 class TestTurnOn:

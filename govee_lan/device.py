@@ -8,6 +8,7 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class GoveeDevice:
     """A Govee device discovered on the LAN."""
+
     ip: str
     device_id: str
     sku: str
@@ -32,6 +33,7 @@ class GoveeDevice:
 @dataclass(frozen=True)
 class DeviceStatus:
     """Current state of a Govee device."""
+
     on: bool
     brightness: int
     color_r: int

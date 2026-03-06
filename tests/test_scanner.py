@@ -1,8 +1,7 @@
 """Tests for device scanner with mocked sockets."""
 
-from tests.conftest import SAMPLE_SCAN_RESPONSE, SAMPLE_SCAN_RESPONSE_2
-
 from govee_lan.scanner import scan
+from tests.conftest import SAMPLE_SCAN_RESPONSE, SAMPLE_SCAN_RESPONSE_2
 
 
 class TestScan:
@@ -15,20 +14,24 @@ class TestScan:
         assert devices[0].device_id == "AA:BB:CC:DD:EE:FF:11:22"
 
     def test_discovers_multiple_devices(self, mock_sockets):
-        mock_sockets.set_responses([
-            (SAMPLE_SCAN_RESPONSE, "192.168.1.100"),
-            (SAMPLE_SCAN_RESPONSE_2, "192.168.1.101"),
-        ])
+        mock_sockets.set_responses(
+            [
+                (SAMPLE_SCAN_RESPONSE, "192.168.1.100"),
+                (SAMPLE_SCAN_RESPONSE_2, "192.168.1.101"),
+            ]
+        )
         devices = scan(timeout=1.0)
         assert len(devices) == 2
         ips = {d.ip for d in devices}
         assert ips == {"192.168.1.100", "192.168.1.101"}
 
     def test_deduplicates_by_device_id(self, mock_sockets):
-        mock_sockets.set_responses([
-            (SAMPLE_SCAN_RESPONSE, "192.168.1.100"),
-            (SAMPLE_SCAN_RESPONSE, "192.168.1.100"),
-        ])
+        mock_sockets.set_responses(
+            [
+                (SAMPLE_SCAN_RESPONSE, "192.168.1.100"),
+                (SAMPLE_SCAN_RESPONSE, "192.168.1.100"),
+            ]
+        )
         devices = scan(timeout=1.0)
         assert len(devices) == 1
 
@@ -39,10 +42,12 @@ class TestScan:
 
     def test_ignores_malformed_responses(self, mock_sockets):
         bad = {"not": "valid"}
-        mock_sockets.set_responses([
-            (bad, "192.168.1.200"),
-            (SAMPLE_SCAN_RESPONSE, "192.168.1.100"),
-        ])
+        mock_sockets.set_responses(
+            [
+                (bad, "192.168.1.200"),
+                (SAMPLE_SCAN_RESPONSE, "192.168.1.100"),
+            ]
+        )
         devices = scan(timeout=1.0)
         assert len(devices) == 1
 
