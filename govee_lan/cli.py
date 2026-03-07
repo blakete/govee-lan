@@ -7,9 +7,11 @@ import sys
 
 from govee_lan.controller import (
     get_status,
+    list_scenes,
     set_brightness,
     set_color,
     set_color_temp,
+    set_scene,
     turn_off,
     turn_on,
 )
@@ -45,6 +47,14 @@ def main(argv: list[str] | None = None) -> None:
     p_st = sub.add_parser("status", help="Query device status")
     p_st.add_argument("ip", help="Device IP address")
 
+    p_scenes = sub.add_parser("scenes", help="List available scenes for a device SKU")
+    p_scenes.add_argument("sku", help="Device SKU (e.g. H6076)")
+
+    p_scene = sub.add_parser("scene", help="Activate a scene on a device")
+    p_scene.add_argument("ip", help="Device IP address")
+    p_scene.add_argument("sku", help="Device SKU (e.g. H6076)")
+    p_scene.add_argument("name", nargs="+", help="Scene name (e.g. Rainbow)")
+
     args = parser.parse_args(argv)
 
     match args.command:
@@ -67,6 +77,11 @@ def main(argv: list[str] | None = None) -> None:
             print(f"Set color temperature to {args.kelvin}K on {args.ip}")
         case "status":
             _do_status(args.ip)
+        case "scenes":
+            _do_list_scenes(args.sku)
+        case "scene":
+            scene_name = " ".join(args.name)
+            _do_set_scene(args.ip, args.sku, scene_name)
 
 
 def _do_scan() -> None:
@@ -96,6 +111,26 @@ def _do_status(ip: str) -> None:
     print(f"  Brightness:  {status.brightness}%")
     print(f"  Color:       R={status.color_r} G={status.color_g} B={status.color_b}")
     print(f"  Color Temp:  {status.color_temp_kelvin}K")
+
+
+def _do_list_scenes(sku: str) -> None:
+    print(f"Fetching scenes for {sku}...")
+    names = list_scenes(sku)
+    if not names:
+        print(f"No scenes found for {sku}.")
+        return
+    print(f"\n{len(names)} scene(s) available:\n")
+    for name in names:
+        print(f"  {name}")
+
+
+def _do_set_scene(ip: str, sku: str, scene_name: str) -> None:
+    try:
+        scene = set_scene(ip, sku, scene_name)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    print(f"Activated scene {scene.name!r} on {ip}")
 
 
 if __name__ == "__main__":

@@ -9,9 +9,11 @@ from govee_lan.protocol import (
     build_brightness,
     build_color,
     build_color_temp,
+    build_pt_real,
     build_status_request,
     build_turn,
 )
+from govee_lan.scenes import SceneInfo, fetch_scene_catalog, generate_scene_commands
 from govee_lan.transport import make_listener, make_sender, recv_responses
 
 
@@ -69,3 +71,30 @@ def get_status(ip: str, timeout: float = DEFAULT_CMD_TIMEOUT) -> DeviceStatus | 
     if result:
         return DeviceStatus.from_status_response(result["msg"]["data"])
     return None
+
+
+def set_scene(ip: str, sku: str, scene_name: str) -> SceneInfo:
+    """Activate a scene on a device by name.
+
+    Fetches the scene catalog for the SKU, generates the BLE-over-LAN commands,
+    and sends them via the undocumented ``ptReal`` command.
+
+    Raises ``ValueError`` if the scene name is not found.
+    Returns the matched ``SceneInfo``.
+    """
+    catalog = fetch_scene_catalog(sku)
+    scene_lower = scene_name.lower()
+    scene = next((s for s in catalog if s.name.lower() == scene_lower), None)
+    if scene is None:
+        available = [s.name for s in catalog]
+        raise ValueError(f"Scene {scene_name!r} not found for {sku}. Available: {available!r}")
+
+    commands = generate_scene_commands(scene, sku)
+    _send(ip, build_pt_real(commands))
+    return scene
+
+
+def list_scenes(sku: str) -> list[str]:
+    """Return available scene names for a device SKU."""
+    catalog = fetch_scene_catalog(sku)
+    return [s.name for s in catalog]

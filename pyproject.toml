@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "govee-lan"
-version = "1.1.0"
+version = "1.2.0"
 description = "Discover and control Govee lights over the local network via the Govee LAN API"
 readme = "README.md"
 license = "MIT"

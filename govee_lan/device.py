@@ -61,6 +61,11 @@ class GoveeDevice:
 
         return controller.get_status(self.ip, timeout=timeout)
 
+    def set_scene(self, scene_name: str) -> None:
+        from govee_lan import controller
+
+        controller.set_scene(self.ip, self.sku, scene_name)
+
 
 @dataclass(frozen=True)
 class DeviceStatus:

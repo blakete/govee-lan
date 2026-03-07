@@ -1,12 +1,23 @@
 """Discover and control Govee lights over the local network via the Govee LAN API."""
 
-from govee_lan.controller import get_status, set_brightness, set_color, set_color_temp, turn_off, turn_on
+from govee_lan.controller import (
+    get_status,
+    list_scenes,
+    set_brightness,
+    set_color,
+    set_color_temp,
+    set_scene,
+    turn_off,
+    turn_on,
+)
 from govee_lan.device import DeviceStatus, GoveeDevice
 from govee_lan.scanner import scan
+from govee_lan.scenes import SceneInfo
 
 __all__ = [
     "GoveeDevice",
     "DeviceStatus",
+    "SceneInfo",
     "scan",
     "turn_on",
     "turn_off",
@@ -14,4 +25,6 @@ __all__ = [
     "set_color",
     "set_color_temp",
     "get_status",
+    "set_scene",
+    "list_scenes",
 ]
