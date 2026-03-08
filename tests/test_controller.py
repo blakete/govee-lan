@@ -1,15 +1,19 @@
 """Tests for device controller with mocked sockets."""
 
 import json
+from unittest.mock import patch
 
 from govee_lan.controller import (
+    _send_to_all,
     get_status,
     set_brightness,
     set_color,
     set_color_temp,
+    set_scene_sync,
     turn_off,
     turn_on,
 )
+from govee_lan.scenes import SceneInfo
 from tests.conftest import SAMPLE_STATUS_RESPONSE
 
 
@@ -83,3 +87,56 @@ class TestGetStatus:
         mock_sockets.mock_recv.return_value = []
         get_status("192.168.1.100")
         mock_sockets.mock_make_listener.assert_called()
+
+
+FAKE_SCENE = SceneInfo(name="Rainbow", scene_code=42, scene_type=2, scene_param="AAAA")
+
+
+class TestSendToAll:
+    def test_sends_to_each_ip(self, mock_sockets):
+        payload = b'{"msg":{"cmd":"ptReal","data":{"command":["abc"]}}}'
+        _send_to_all(["192.168.1.100", "192.168.1.101"], payload)
+        calls = mock_sockets.sender.sendto.call_args_list
+        assert len(calls) == 2
+        assert calls[0].args == (payload, ("192.168.1.100", 4003))
+        assert calls[1].args == (payload, ("192.168.1.101", 4003))
+
+    def test_uses_single_socket(self, mock_sockets):
+        _send_to_all(["192.168.1.100", "192.168.1.101"], b"test")
+        mock_sockets.mock_make_sender.assert_called_once()
+
+    def test_closes_socket(self, mock_sockets):
+        _send_to_all(["192.168.1.100"], b"test")
+        mock_sockets.sender.close.assert_called_once()
+
+
+class TestSetSceneSync:
+    @patch("govee_lan.controller.generate_scene_commands", return_value=["cmd1"])
+    @patch("govee_lan.controller.fetch_scene_catalog", return_value=[FAKE_SCENE])
+    def test_sends_same_payload_to_all_ips(self, mock_catalog, mock_gen, mock_sockets):
+        set_scene_sync(["192.168.1.100", "192.168.1.101"], "H6076", "Rainbow")
+        calls = mock_sockets.sender.sendto.call_args_list
+        assert len(calls) == 2
+        assert calls[0].args[0] == calls[1].args[0]
+        msg = json.loads(calls[0].args[0])
+        assert msg["msg"]["cmd"] == "ptReal"
+
+    @patch("govee_lan.controller.generate_scene_commands", return_value=["cmd1"])
+    @patch("govee_lan.controller.fetch_scene_catalog", return_value=[FAKE_SCENE])
+    def test_fetches_catalog_once(self, mock_catalog, mock_gen, mock_sockets):
+        set_scene_sync(["192.168.1.100", "192.168.1.101"], "H6076", "Rainbow")
+        mock_catalog.assert_called_once_with("H6076")
+
+    @patch("govee_lan.controller.generate_scene_commands", return_value=["cmd1"])
+    @patch("govee_lan.controller.fetch_scene_catalog", return_value=[FAKE_SCENE])
+    def test_returns_scene_info(self, mock_catalog, mock_gen, mock_sockets):
+        result = set_scene_sync(["192.168.1.100"], "H6076", "Rainbow")
+        assert result.name == "Rainbow"
+        assert result.scene_code == 42
+
+    @patch("govee_lan.controller.fetch_scene_catalog", return_value=[FAKE_SCENE])
+    def test_raises_on_unknown_scene(self, mock_catalog, mock_sockets):
+        import pytest
+
+        with pytest.raises(ValueError, match="not found"):
+            set_scene_sync(["192.168.1.100"], "H6076", "Nonexistent")

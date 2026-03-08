@@ -12,6 +12,7 @@ from govee_lan.controller import (
     set_color,
     set_color_temp,
     set_scene,
+    set_scene_sync,
     turn_off,
     turn_on,
 )
@@ -55,6 +56,11 @@ def main(argv: list[str] | None = None) -> None:
     p_scene.add_argument("sku", help="Device SKU (e.g. H6076)")
     p_scene.add_argument("name", nargs="+", help="Scene name (e.g. Rainbow)")
 
+    p_ssync = sub.add_parser("scene-sync", help="Activate a scene on multiple devices simultaneously")
+    p_ssync.add_argument("ips", nargs="+", help="Device IP addresses")
+    p_ssync.add_argument("--sku", required=True, help="Device SKU (e.g. H6076)")
+    p_ssync.add_argument("--scene", required=True, nargs="+", help="Scene name (e.g. Rainbow)")
+
     args = parser.parse_args(argv)
 
     match args.command:
@@ -82,6 +88,9 @@ def main(argv: list[str] | None = None) -> None:
         case "scene":
             scene_name = " ".join(args.name)
             _do_set_scene(args.ip, args.sku, scene_name)
+        case "scene-sync":
+            scene_name = " ".join(args.scene)
+            _do_set_scene_sync(args.ips, args.sku, scene_name)
 
 
 def _do_scan() -> None:
@@ -131,6 +140,16 @@ def _do_set_scene(ip: str, sku: str, scene_name: str) -> None:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
     print(f"Activated scene {scene.name!r} on {ip}")
+
+
+def _do_set_scene_sync(ips: list[str], sku: str, scene_name: str) -> None:
+    try:
+        scene = set_scene_sync(ips, sku, scene_name)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    ip_list = ", ".join(ips)
+    print(f"Activated scene {scene.name!r} simultaneously on {ip_list}")
 
 
 if __name__ == "__main__":

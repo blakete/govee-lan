@@ -7,6 +7,7 @@ from govee_lan.controller import (
     set_color,
     set_color_temp,
     set_scene,
+    set_scene_sync,
     turn_off,
     turn_on,
 )
@@ -26,5 +27,6 @@ __all__ = [
     "set_color_temp",
     "get_status",
     "set_scene",
+    "set_scene_sync",
     "list_scenes",
 ]

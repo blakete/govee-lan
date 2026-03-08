@@ -98,3 +98,41 @@ def list_scenes(sku: str) -> list[str]:
     """Return available scene names for a device SKU."""
     catalog = fetch_scene_catalog(sku)
     return [s.name for s in catalog]
+
+
+# ---------------------------------------------------------------------------
+# Synchronized multi-device helpers
+# ---------------------------------------------------------------------------
+
+
+def _send_to_all(ips: list[str], payload: bytes) -> None:
+    """Send the same payload to every IP with minimal inter-packet delay.
+
+    Uses a single pre-opened socket so the gap between sends is only one
+    ``sendto`` syscall (~microseconds).
+    """
+    sender = make_sender()
+    for ip in ips:
+        sender.sendto(payload, (ip, CONTROL_PORT))
+    sender.close()
+
+
+def set_scene_sync(ips: list[str], sku: str, scene_name: str) -> SceneInfo:
+    """Activate a scene on multiple devices simultaneously.
+
+    The scene catalog is fetched once and the payload is built once, then
+    sent to all *ips* back-to-back from a single socket (microsecond gap).
+
+    Raises ``ValueError`` if the scene name is not found.
+    Returns the matched ``SceneInfo``.
+    """
+    catalog = fetch_scene_catalog(sku)
+    scene = next((s for s in catalog if s.name.lower() == scene_name.lower()), None)
+    if scene is None:
+        available = [s.name for s in catalog]
+        raise ValueError(f"Scene {scene_name!r} not found for {sku}. Available: {available!r}")
+
+    commands = generate_scene_commands(scene, sku)
+    payload = build_pt_real(commands)
+    _send_to_all(ips, payload)
+    return scene
