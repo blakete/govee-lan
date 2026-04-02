@@ -73,6 +73,21 @@ def get_status(ip: str, timeout: float = DEFAULT_CMD_TIMEOUT) -> DeviceStatus | 
     return None
 
 
+def turn_on_verified(ip: str, timeout: float = DEFAULT_CMD_TIMEOUT) -> tuple[DeviceStatus | None, DeviceStatus | None]:
+    """Turn on with pre/post status checks.
+
+    Returns ``(before, after)`` where either value is ``None`` if the device
+    did not respond within *timeout* seconds.  A ``None`` before-status means
+    the device was unreachable before the command was sent.
+    """
+    before = get_status(ip, timeout)
+    if before is None:
+        return None, None
+    turn_on(ip)
+    after = get_status(ip, timeout)
+    return before, after
+
+
 def set_scene(ip: str, sku: str, scene_name: str) -> SceneInfo:
     """Activate a scene on a device by name.
 

@@ -10,6 +10,7 @@ from govee_lan.controller import (
     set_scene_sync,
     turn_off,
     turn_on,
+    turn_on_verified,
 )
 from govee_lan.device import DeviceStatus, GoveeDevice
 from govee_lan.scanner import scan
@@ -21,6 +22,7 @@ __all__ = [
     "SceneInfo",
     "scan",
     "turn_on",
+    "turn_on_verified",
     "turn_off",
     "set_brightness",
     "set_color",
